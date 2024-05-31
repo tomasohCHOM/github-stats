@@ -34,19 +34,17 @@ func main() {
 	owner := "EthanThatOneKid" // Replace with the repository owner
 	repo := "acmcsuf.com"      // Replace with the repository name
 
-	// Fetch open issues count
-	repoStats, _, err := client.Repositories.Get(ctx, owner, repo)
+	openIssuesCount, err := getStats(ctx, client, owner, repo, "open")
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatalf("Error fetching open issues count: %v", err)
 	}
-
-	openIssuesCount := 0
-	if *repoStats.HasIssues {
-		openIssuesCount = repoStats.GetOpenIssuesCount()
-	}
-
 	fmt.Printf("Open Issues: %d\n", openIssuesCount)
+
+	closedIssuesCount, err := getStats(ctx, client, owner, repo, "closed")
+	if err != nil {
+		log.Fatalf("Error fetching closed issues count: %v", err)
+	}
+	fmt.Printf("Closed Issues: %d\n", closedIssuesCount)
 
 	// app := &cli.App{
 	// Name:  "github-stats",
@@ -63,6 +61,36 @@ func main() {
 	// if err := app.Run(os.Args); err != nil {
 	// log.Fatal(err)
 	// }
+}
+
+// getStats fetches the count of issues or pull requests based on the state and pull request filter
+func getStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
+	opts := &github.IssueListByRepoOptions{
+		State:       state,
+		ListOptions: github.ListOptions{PerPage: 10},
+	}
+
+	var allIssues []*github.Issue
+	for {
+		issues, resp, err := client.Issues.ListByRepo(ctx, owner, repo, opts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		allIssues = append(allIssues, issues...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
+	}
+
+	count := 0
+	for _, issue := range allIssues {
+		if !issue.IsPullRequest() {
+			count++
+		}
+	}
+
+	return count, nil
 }
 
 func action(ctx *cli.Context) error {
