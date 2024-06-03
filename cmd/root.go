@@ -1,7 +1,4 @@
-// Run:
-// go run cli/main.go --username tomasohCHOM
-
-package main
+package cmd
 
 import (
 	"bufio"
@@ -13,12 +10,12 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
-	"github.com/tomasohCHOM/github-stats"
+	"github.com/tomasohCHOM/github-stats/githubstats"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )
 
-func main() {
+func Execute() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Unable to load .env file")
