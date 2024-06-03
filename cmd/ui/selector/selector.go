@@ -1,5 +1,5 @@
 // Define selection options
-package select
+package selector
 
 import (
 	"strings"
@@ -53,9 +53,9 @@ func (m model) View() string {
 
 	for i := 0; i < len(choices); i++ {
 		if m.cursor == i {
-			s.WriteString("(•) ")
+			s.WriteString("[*] ")
 		} else {
-			s.WriteString("( ) ")
+			s.WriteString("[ ] ")
 		}
 		s.WriteString(choices[i])
 		s.WriteString("\n")
