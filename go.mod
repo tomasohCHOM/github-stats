@@ -3,6 +3,7 @@ module github.com/tomasohCHOM/github-stats
 go 1.22.3
 
 require (
+	github.com/charmbracelet/bubbletea v0.26.4
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/urfave/cli/v2 v2.27.2
@@ -10,7 +11,6 @@ require (
 )
 
 require (
-	github.com/charmbracelet/bubbletea v0.26.4 // indirect
 	github.com/charmbracelet/x/ansi v0.1.2 // indirect
 	github.com/charmbracelet/x/input v0.1.0 // indirect
 	github.com/charmbracelet/x/term v0.1.1 // indirect

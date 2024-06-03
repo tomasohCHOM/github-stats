@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
-	"github.com/tomasohCHOM/github-stats/stats"
+	"github.com/tomasohCHOM/github-stats/cmd/stats"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )
