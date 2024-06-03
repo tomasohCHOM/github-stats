@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
+	"github.com/tomasohCHOM/github-stats"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )
@@ -58,73 +59,21 @@ func main() {
 	}
 	fmt.Printf("Closed PRs: %d\n", closedPRCount)
 
-	// app := &cli.App{
-	// Name:  "github-stats",
-	// Usage: "Generate GitHub stats from a user/organization",
-	//:! Flags: []cli.Flag{
-	// &cli.StringFlag{
-	// Name:     "username",
-	// Usage:    "Match the github username",
-	// Required: true,
-	// },
-	// },
-	// Action: action,
-	// }
-	// if err := app.Run(os.Args); err != nil {
-	// log.Fatal(err)
-	// }
-}
-
-// getIssueStats fetches the count of issues or pull requests based on the state and pull request filter
-func getIssueStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
-	opts := &github.IssueListByRepoOptions{
-		State:       state,
-		ListOptions: github.ListOptions{PerPage: 10},
+	app := &cli.App{
+		Name:  "github-stats",
+		Usage: "Generate GitHub stats from a user/organization",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "username",
+				Usage:    "Match the github username",
+				Required: true,
+			},
+		},
+		Action: action,
 	}
-
-	var allIssues []*github.Issue
-	for {
-		issues, resp, err := client.Issues.ListByRepo(ctx, owner, repo, opts)
-		if err != nil {
-			log.Fatal(err)
-		}
-		allIssues = append(allIssues, issues...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
 	}
-
-	count := 0
-	for _, issue := range allIssues {
-		if !issue.IsPullRequest() {
-			count++
-		}
-	}
-
-	return count, nil
-}
-
-// getPRStats fetches the count of issues or pull requests based on the state and pull request filter
-func getPRStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
-	opts := &github.PullRequestListOptions{
-		State:       state,
-		ListOptions: github.ListOptions{PerPage: 10},
-	}
-
-	var allPullRequests []*github.PullRequest
-	for {
-		pullRequests, resp, err := client.PullRequests.List(ctx, owner, repo, opts)
-		if err != nil {
-			log.Fatal(err)
-		}
-		allPullRequests = append(allPullRequests, pullRequests...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
-	}
-	return len(allPullRequests), nil
 }
 
 func action(ctx *cli.Context) error {
