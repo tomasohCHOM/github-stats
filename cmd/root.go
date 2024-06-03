@@ -8,9 +8,10 @@ import (
 	"os"
 	"strings"
 
+	bubbletea "github.com/charmbracelet/bubbletea"
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
-	"github.com/tomasohCHOM/github-stats/cmd/stats"
+	"github.com/tomasohCHOM/github-stats/cmd/ui/selector"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )
@@ -37,8 +38,8 @@ func Execute() {
 	}
 }
 
-func action(ctx *cli.Context) error {
-	c := context.Background()
+func action(c *cli.Context) error {
+	ctx := context.Background()
 
 	token := os.Getenv("ACCESS_TOKEN")
 	if token == "" {
@@ -46,19 +47,19 @@ func action(ctx *cli.Context) error {
 	}
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(c, ts)
-
+	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 
-	owner := ctx.String("username")
+	owner := c.String("username")
 	if owner == "" {
+		fmt.Println("Which user/organization would you like to retrieve GitHub data from?")
 		for {
 			reader := bufio.NewReader(os.Stdin)
 			fmt.Print("> ")
 			input, _ := reader.ReadString('\n')
 			input = strings.TrimSpace(input)
 			owner = input
-			_, _, err := client.Users.Get(c, owner)
+			_, _, err := client.Users.Get(ctx, owner)
 			if err == nil {
 				break
 			}
@@ -66,51 +67,13 @@ func action(ctx *cli.Context) error {
 		}
 	}
 
-	opts := &github.RepositoryListOptions{ListOptions: github.ListOptions{PerPage: 10}}
+	header := "What would you like to retrieve?\n\n"
+	options := []string{"Pull Request Count", "Issue Count"}
 
-	var allRepos []*github.Repository
-
-	for {
-		repos, resp, err := client.Repositories.List(context.Background(), owner, opts)
-		if err != nil {
-			log.Fatal(err)
-		}
-		allRepos = append(allRepos, repos...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
+	p := bubbletea.NewProgram(selector.InitialSelectionModel(header, options))
+	if _, err := p.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return err
 	}
-
-	for _, repository := range allRepos {
-		repoName := repository.GetName()
-		fmt.Println(repoName)
-		openIssuesCount, err := stats.GetIssueStats(c, client, owner, repoName, "open")
-		if err != nil {
-			log.Fatalf("Error fetching open issues count: %v", err)
-		}
-		fmt.Printf("Open Issues: %d\n", openIssuesCount)
-
-		closedIssuesCount, err := stats.GetIssueStats(c, client, owner, repoName, "closed")
-		if err != nil {
-			log.Fatalf("Error fetching closed issues count: %v", err)
-		}
-		fmt.Printf("Closed Issues: %d\n", closedIssuesCount)
-
-		openPRCount, err := stats.GetPRStats(c, client, owner, repoName, "open")
-		if err != nil {
-			log.Fatalf("Error fetching open PRs count: %v", err)
-		}
-		fmt.Printf("Open PRs: %d\n", openPRCount)
-
-		closedPRCount, err := stats.GetPRStats(c, client, owner, repoName, "closed")
-		if err != nil {
-			log.Fatalf("Error fetching closed PRs count: %v", err)
-		}
-		fmt.Printf("Closed PRs: %d\n", closedPRCount)
-
-		fmt.Println("")
-	}
-
 	return nil
 }
