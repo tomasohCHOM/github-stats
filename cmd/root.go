@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
-	"github.com/tomasohCHOM/github-stats/githubstats"
+	"github.com/tomasohCHOM/github-stats/stats"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )
@@ -85,25 +85,25 @@ func action(ctx *cli.Context) error {
 	for _, repository := range allRepos {
 		repoName := repository.GetName()
 		fmt.Println(repoName)
-		openIssuesCount, err := githubstats.GetIssueStats(c, client, owner, repoName, "open")
+		openIssuesCount, err := stats.GetIssueStats(c, client, owner, repoName, "open")
 		if err != nil {
 			log.Fatalf("Error fetching open issues count: %v", err)
 		}
 		fmt.Printf("Open Issues: %d\n", openIssuesCount)
 
-		closedIssuesCount, err := githubstats.GetIssueStats(c, client, owner, repoName, "closed")
+		closedIssuesCount, err := stats.GetIssueStats(c, client, owner, repoName, "closed")
 		if err != nil {
 			log.Fatalf("Error fetching closed issues count: %v", err)
 		}
 		fmt.Printf("Closed Issues: %d\n", closedIssuesCount)
 
-		openPRCount, err := githubstats.GetPRStats(c, client, owner, repoName, "open")
+		openPRCount, err := stats.GetPRStats(c, client, owner, repoName, "open")
 		if err != nil {
 			log.Fatalf("Error fetching open PRs count: %v", err)
 		}
 		fmt.Printf("Open PRs: %d\n", openPRCount)
 
-		closedPRCount, err := githubstats.GetPRStats(c, client, owner, repoName, "closed")
+		closedPRCount, err := stats.GetPRStats(c, client, owner, repoName, "closed")
 		if err != nil {
 			log.Fatalf("Error fetching closed PRs count: %v", err)
 		}

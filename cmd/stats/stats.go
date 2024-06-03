@@ -1,4 +1,4 @@
-package githubstats
+package stats
 
 import (
 	"context"
