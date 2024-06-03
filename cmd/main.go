@@ -4,10 +4,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
@@ -26,9 +28,9 @@ func main() {
 		Usage: "Generate GitHub stats from a user/organization",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "username",
-				Usage:    "Match the github username",
-				Required: true,
+				Name:  "username",
+				Value: "",
+				Usage: "Match the github username",
 			},
 		},
 		Action: action,
@@ -43,7 +45,7 @@ func action(ctx *cli.Context) error {
 
 	token := os.Getenv("ACCESS_TOKEN")
 	if token == "" {
-		log.Fatal("GITHUB_TOKEN environment variable not set")
+		log.Fatal("Please set your GitHub token in the ACCESS_TOKEN environment variable.")
 	}
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
@@ -52,6 +54,20 @@ func action(ctx *cli.Context) error {
 	client := github.NewClient(tc)
 
 	owner := ctx.String("username")
+	if owner == "" {
+		for {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Print("> ")
+			input, _ := reader.ReadString('\n')
+			input = strings.TrimSpace(input)
+			owner = input
+			_, _, err := client.Users.Get(c, owner)
+			if err == nil {
+				break
+			}
+			fmt.Println("User does not exist, try again!")
+		}
+	}
 
 	opts := &github.RepositoryListOptions{ListOptions: github.ListOptions{PerPage: 10}}
 
