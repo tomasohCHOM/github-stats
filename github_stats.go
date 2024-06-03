@@ -8,7 +8,7 @@ import (
 )
 
 // getIssueStats fetches the count of issues or pull requests based on the state and pull request filter
-func getIssueStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
+func GetIssueStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
 	opts := &github.IssueListByRepoOptions{
 		State:       state,
 		ListOptions: github.ListOptions{PerPage: 10},
@@ -38,7 +38,7 @@ func getIssueStats(ctx context.Context, client *github.Client, owner, repo, stat
 }
 
 // getPRStats fetches the count of issues or pull requests based on the state and pull request filter
-func getPRStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
+func GetPRStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
 	opts := &github.PullRequestListOptions{
 		State:       state,
 		ListOptions: github.ListOptions{PerPage: 10},

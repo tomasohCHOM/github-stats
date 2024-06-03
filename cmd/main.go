@@ -17,48 +17,10 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Unable to load .env file")
 	}
-	token := os.Getenv("ACCESS_TOKEN")
-	if token == "" {
-		log.Fatal("GITHUB_TOKEN environment variable not set")
-	}
-
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(ctx, ts)
-
-	client := github.NewClient(tc)
-	owner := "EthanThatOneKid" // Replace with the repository owner
-	repo := "acmcsuf.com"      // Replace with the repository name
-
-	openIssuesCount, err := getIssueStats(ctx, client, owner, repo, "open")
-	if err != nil {
-		log.Fatalf("Error fetching open issues count: %v", err)
-	}
-	fmt.Printf("Open Issues: %d\n", openIssuesCount)
-
-	closedIssuesCount, err := getIssueStats(ctx, client, owner, repo, "closed")
-	if err != nil {
-		log.Fatalf("Error fetching closed issues count: %v", err)
-	}
-	fmt.Printf("Closed Issues: %d\n", closedIssuesCount)
-
-	openPRCount, err := getPRStats(ctx, client, owner, repo, "open")
-	if err != nil {
-		log.Fatalf("Error fetching open PRs count: %v", err)
-	}
-	fmt.Printf("Open PRs: %d\n", openPRCount)
-
-	closedPRCount, err := getPRStats(ctx, client, owner, repo, "closed")
-	if err != nil {
-		log.Fatalf("Error fetching closed PRs count: %v", err)
-	}
-	fmt.Printf("Closed PRs: %d\n", closedPRCount)
-
 	app := &cli.App{
 		Name:  "github-stats",
 		Usage: "Generate GitHub stats from a user/organization",
@@ -77,14 +39,26 @@ func main() {
 }
 
 func action(ctx *cli.Context) error {
-	username := ctx.String("username")
-	client := github.NewClient(nil)
-	opt := &github.RepositoryListOptions{ListOptions: github.ListOptions{PerPage: 10}}
+	c := context.Background()
+
+	token := os.Getenv("ACCESS_TOKEN")
+	if token == "" {
+		log.Fatal("GITHUB_TOKEN environment variable not set")
+	}
+
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(c, ts)
+
+	client := github.NewClient(tc)
+
+	owner := ctx.String("username")
+
+	opts := &github.RepositoryListOptions{ListOptions: github.ListOptions{PerPage: 10}}
 
 	var allRepos []*github.Repository
 
 	for {
-		repos, resp, err := client.Repositories.List(context.Background(), username, opt)
+		repos, resp, err := client.Repositories.List(context.Background(), owner, opts)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -92,11 +66,37 @@ func action(ctx *cli.Context) error {
 		if resp.NextPage == 0 {
 			break
 		}
-		opt.Page = resp.NextPage
+		opts.Page = resp.NextPage
 	}
 
 	for _, repository := range allRepos {
-		fmt.Println(repository.GetName())
+		repoName := repository.GetName()
+		fmt.Println(repoName)
+		openIssuesCount, err := githubstats.GetIssueStats(c, client, owner, repoName, "open")
+		if err != nil {
+			log.Fatalf("Error fetching open issues count: %v", err)
+		}
+		fmt.Printf("Open Issues: %d\n", openIssuesCount)
+
+		closedIssuesCount, err := githubstats.GetIssueStats(c, client, owner, repoName, "closed")
+		if err != nil {
+			log.Fatalf("Error fetching closed issues count: %v", err)
+		}
+		fmt.Printf("Closed Issues: %d\n", closedIssuesCount)
+
+		openPRCount, err := githubstats.GetPRStats(c, client, owner, repoName, "open")
+		if err != nil {
+			log.Fatalf("Error fetching open PRs count: %v", err)
+		}
+		fmt.Printf("Open PRs: %d\n", openPRCount)
+
+		closedPRCount, err := githubstats.GetPRStats(c, client, owner, repoName, "closed")
+		if err != nil {
+			log.Fatalf("Error fetching closed PRs count: %v", err)
+		}
+		fmt.Printf("Closed PRs: %d\n", closedPRCount)
+
+		fmt.Println("")
 	}
 
 	return nil
