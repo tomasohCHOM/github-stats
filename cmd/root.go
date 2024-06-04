@@ -89,6 +89,13 @@ func action(c *cli.Context) error {
 	for _, selection := range userOptions.DataToCollect {
 		repo := "lc-dailies"
 		switch selection {
+		case "Repository Count":
+			_, count, err := stats.GetRepositories(ctx, client, userOptions.Username)
+			if err != nil {
+				log.Fatal("Could not fetch data")
+			}
+			fmt.Println("Public Repository Count:", count)
+
 		case "Pull Request Count":
 			prCount := 0
 			open, err := stats.GetPRStats(ctx, client, userOptions.Username, repo, "open")
@@ -102,6 +109,7 @@ func action(c *cli.Context) error {
 			}
 			prCount += closed
 			fmt.Println("Total PR Count (Open and Closed):", prCount)
+
 		case "Issue Count":
 			issueCount := 0
 			open, err := stats.GetIssueStats(ctx, client, userOptions.Username, repo, "open")
