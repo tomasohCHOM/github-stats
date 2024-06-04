@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
-// getIssueStats fetches the count of issues or pull requests based on the state and pull request filter
+// GetIssueStats fetches the count of issues or pull requests based on the state and pull request filter
 func GetIssueStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
 	opts := &github.IssueListByRepoOptions{
 		State:       state,
@@ -37,7 +37,7 @@ func GetIssueStats(ctx context.Context, client *github.Client, owner, repo, stat
 	return count, nil
 }
 
-// getPRStats fetches the count of issues or pull requests based on the state and pull request filter
+// GetPRStats fetches the count of issues or pull requests based on the state and pull request filter
 func GetPRStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
 	opts := &github.PullRequestListOptions{
 		State:       state,

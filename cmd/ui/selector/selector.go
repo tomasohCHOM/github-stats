@@ -6,30 +6,28 @@ import (
 	"strings"
 
 	bubbletea "github.com/charmbracelet/bubbletea"
-	// "github.com/tomasohCHOM/github-stats/cmd/stats"
+	"github.com/tomasohCHOM/github-stats/cmd/state"
 )
 
-var choices = []string{"Taro", "Coffee", "Lychee"}
-
 type model struct {
-	options  []string
-	cursor   int
-	selected map[int]bool
-	input    string
-	result   string
-	err      error
-	header   string
+	userOptions *state.UserOptions
+	options     []string
+	cursor      int
+	selected    map[int]bool
+	input       string
+	err         error
+	header      string
 }
 
-func InitialSelectionModel(header string, options []string) model {
+func InitialSelectionModel(userOptions *state.UserOptions, header string, options []string) model {
 	return model{
-		header:   header,
-		options:  options,
-		cursor:   0,
-		selected: make(map[int]bool),
-		input:    "",
-		result:   "",
-		err:      nil,
+		userOptions: userOptions,
+		header:      header,
+		options:     options,
+		cursor:      0,
+		selected:    make(map[int]bool),
+		input:       "",
+		err:         nil,
 	}
 }
 
@@ -47,12 +45,12 @@ func (m model) Update(msg bubbletea.Msg) (bubbletea.Model, bubbletea.Cmd) {
 		case "up", "k":
 			m.cursor--
 			if m.cursor < 0 {
-				m.cursor = len(choices) - 1
+				m.cursor = len(m.options) - 1
 			}
 
 		case "down", "j":
 			m.cursor++
-			if m.cursor >= len(choices) {
+			if m.cursor >= len(m.options) {
 				m.cursor = 0
 			}
 
@@ -60,7 +58,7 @@ func (m model) Update(msg bubbletea.Msg) (bubbletea.Model, bubbletea.Cmd) {
 			// Send the choice on the channel and exit.
 			m.selected[m.cursor] = !m.selected[m.cursor]
 		case "enter":
-			m.result, m.err = m.handleSelection()
+			m.userOptions.DataToCollect, m.err = m.handleSelection()
 			return m, bubbletea.Quit
 		}
 
@@ -89,20 +87,15 @@ func (m model) View() string {
 	return s.String()
 }
 
-func (m *model) handleSelection() (string, error) {
+func (m *model) handleSelection() ([]string, error) {
 	var results []string
 	for i := range m.selected {
 		if m.selected[i] {
-			switch m.options[i] {
-			case "Pull Requests":
-				results = append(results, "Fetching pull requests...") // Add actual PR fetching logic here
-			case "Issues":
-				results = append(results, "Fetching issues...") // Add actual issues fetching logic here
-			}
+			results = append(results, m.options[i])
 		}
 	}
 	if len(results) == 0 {
-		return "", fmt.Errorf("no options selected")
+		return nil, fmt.Errorf("no options selected")
 	}
-	return strings.Join(results, "\n"), nil
+	return results, nil
 }
