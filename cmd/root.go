@@ -87,41 +87,26 @@ func action(c *cli.Context) error {
 	fmt.Println("\nWaiting for Response...")
 
 	for _, selection := range userOptions.DataToCollect {
-		repo := "lc-dailies"
 		switch selection {
 		case "Repository Count":
-			_, count, err := stats.GetRepositories(ctx, client, userOptions.Username)
+			repoCount, err := stats.GetRepositories(ctx, client, userOptions.Username)
 			if err != nil {
 				log.Fatal("Could not fetch data")
 			}
-			fmt.Println("Public Repository Count:", count)
+			fmt.Println("Public Repository Count:", repoCount)
 
 		case "Pull Request Count":
-			prCount := 0
-			open, err := stats.GetPRStats(ctx, client, userOptions.Username, repo, "open")
+			prCount, err := stats.GetPRStats(ctx, client, userOptions.Username)
 			if err != nil {
 				log.Fatal("Could not fetch data")
 			}
-			prCount += open
-			closed, err := stats.GetPRStats(ctx, client, userOptions.Username, repo, "closed")
-			if err != nil {
-				log.Fatal("Could not fetch data")
-			}
-			prCount += closed
 			fmt.Println("Total PR Count (Open and Closed):", prCount)
 
 		case "Issue Count":
-			issueCount := 0
-			open, err := stats.GetIssueStats(ctx, client, userOptions.Username, repo, "open")
+			issueCount, err := stats.GetIssueStats(ctx, client, userOptions.Username)
 			if err != nil {
 				log.Fatal("Could not fetch data")
 			}
-			issueCount += open
-			closed, err := stats.GetIssueStats(ctx, client, userOptions.Username, repo, "closed")
-			if err != nil {
-				log.Fatal("Could not fetch data")
-			}
-			issueCount += closed
 			fmt.Println("Total PR Count (Open and Closed):", issueCount)
 		}
 	}

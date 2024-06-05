@@ -2,82 +2,53 @@ package stats
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/go-github/github"
 )
 
 // GetRepositories fetches all the repository names and repository count associated with the GitHub username
-func GetRepositories(ctx context.Context, client *github.Client, username string) ([]string, int, error) {
+func GetRepositories(ctx context.Context, client *github.Client, username string) (int, error) {
 	opts := &github.RepositoryListOptions{
-		ListOptions: github.ListOptions{PerPage: 10},
+		ListOptions: github.ListOptions{PerPage: 100},
 	}
-	var allRepos []*github.Repository
+	totalRepos := 0
 	for {
-		repo, resp, err := client.Repositories.List(ctx, username, opts)
-		if err != nil {
-			return nil, 0, err
-		}
-		allRepos = append(allRepos, repo...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
-	}
-	repoNames := []string{}
-	for _, repo := range allRepos {
-		repoNames = append(repoNames, repo.GetName())
-	}
-	return repoNames, len(repoNames), nil
-}
-
-// GetIssueStats fetches the count of issues or pull requests based on the state and pull request filter
-func GetIssueStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
-	opts := &github.IssueListByRepoOptions{
-		State:       state,
-		ListOptions: github.ListOptions{PerPage: 10},
-	}
-
-	var allIssues []*github.Issue
-	for {
-		issues, resp, err := client.Issues.ListByRepo(ctx, owner, repo, opts)
+		repos, response, err := client.Repositories.List(ctx, username, opts)
 		if err != nil {
 			return 0, err
 		}
-		allIssues = append(allIssues, issues...)
-		if resp.NextPage == 0 {
+		totalRepos += len(repos)
+		if response.NextPage == 0 {
 			break
 		}
-		opts.Page = resp.NextPage
+		opts.Page = response.NextPage
 	}
-
-	count := 0
-	for _, issue := range allIssues {
-		if !issue.IsPullRequest() {
-			count++
-		}
-	}
-
-	return count, nil
+	return totalRepos, nil
 }
 
-// GetPRStats fetches the count of issues or pull requests based on the state and pull request filter
-func GetPRStats(ctx context.Context, client *github.Client, owner, repo, state string) (int, error) {
-	opts := &github.PullRequestListOptions{
-		State:       state,
+// GetIssueStats fetches the total issue count for the associated GitHub username
+func GetIssueStats(ctx context.Context, client *github.Client, username string) (int, error) {
+	opts := &github.SearchOptions{
 		ListOptions: github.ListOptions{PerPage: 10},
 	}
-
-	var allPullRequests []*github.PullRequest
-	for {
-		pullRequests, resp, err := client.PullRequests.List(ctx, owner, repo, opts)
-		if err != nil {
-			return 0, err
-		}
-		allPullRequests = append(allPullRequests, pullRequests...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
+	query := fmt.Sprintf("type:issue author:%s", username)
+	issues, _, err := client.Search.Issues(ctx, query, opts)
+	if err != nil {
+		return 0, err
 	}
-	return len(allPullRequests), nil
+	return *issues.Total, nil
+}
+
+// GetPRStats fetches the total pull request count for the associated GitHub username
+func GetPRStats(ctx context.Context, client *github.Client, username string) (int, error) {
+	opts := &github.SearchOptions{
+		ListOptions: github.ListOptions{PerPage: 10},
+	}
+	query := fmt.Sprintf("type:pr author:%s", username)
+	prs, _, err := client.Search.Issues(ctx, query, opts)
+	if err != nil {
+		return 0, err
+	}
+	return *prs.Total, nil
 }
