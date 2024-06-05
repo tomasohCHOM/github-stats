@@ -1,23 +1,34 @@
 package cmd
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	bubbletea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
 	"github.com/tomasohCHOM/github-stats/cmd/state"
 	"github.com/tomasohCHOM/github-stats/cmd/stats"
 	"github.com/tomasohCHOM/github-stats/cmd/ui/selector"
+	"github.com/tomasohCHOM/github-stats/cmd/ui/text"
 
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )
+
+const logo = `
+   _____ _ _   _    _       _        _____ _        _       
+  / ____(_) | | |  | |     | |      / ____| |      | |      
+ | |  __ _| |_| |__| |_   _| |__   | (___ | |_ __ _| |_ ___ 
+ | | |_ | | __|  __  | | | | '_ \   \___ \| __/ _, | __/ __|
+ | |__| | | |_| |  | | |_| | |_) |  ____) | || (_| | |_\__ \
+  \_____|_|\__|_|  |_|\__,_|_.__/  |_____/ \__\__,_|\__|___/
+`
+
+var logoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#70a5fd")).Bold(true)
 
 func Execute() {
 	err := godotenv.Load(".env")
@@ -49,6 +60,8 @@ func action(c *cli.Context) error {
 		DataToCollect: []string{},
 	}
 
+	fmt.Printf("%s\n", logoStyle.Render(logo))
+
 	token := os.Getenv("ACCESS_TOKEN")
 	if token == "" {
 		log.Fatal("Please set your GitHub token in the ACCESS_TOKEN environment variable.")
@@ -59,16 +72,16 @@ func action(c *cli.Context) error {
 	client := github.NewClient(tc)
 
 	if userOptions.Username == "" {
-		fmt.Println("Which user/organization would you like to retrieve GitHub data from?")
+		header := "Which user/organization would you like to retrieve GitHub data from?"
 		for {
-			reader := bufio.NewReader(os.Stdin)
-			fmt.Print("> ")
-			input, _ := reader.ReadString('\n')
-			input = strings.TrimSpace(input)
-			username := input
+			p := bubbletea.NewProgram(text.InitialTextModel(userOptions, header))
+			if _, err := p.Run(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				return err
+			}
+			username := userOptions.Username
 			_, _, err := client.Users.Get(ctx, username)
 			if err == nil {
-				userOptions.Username = username
 				break
 			}
 			fmt.Println("User does not exist, try again!")
