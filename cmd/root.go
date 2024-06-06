@@ -28,7 +28,7 @@ const logo = `
   \_____|_|\__|_|  |_|\__,_|_.__/  |_____/ \__\__,_|\__|___/
 `
 
-var logoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#70a5fd")).Bold(true)
+var logoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#77BDFB")).Bold(true)
 
 func Execute() {
 	err := godotenv.Load(".env")
@@ -73,18 +73,23 @@ func action(c *cli.Context) error {
 
 	if userOptions.Username == "" {
 		header := "Which user/organization would you like to retrieve GitHub data from?"
+		errMsg := ""
 		for {
-			p := bubbletea.NewProgram(text.InitialTextModel(userOptions, header))
+			p := bubbletea.NewProgram(text.InitialTextModel(userOptions, header, errMsg))
 			if _, err := p.Run(); err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 				return err
+			}
+			if userOptions.Username == "" {
+				errMsg = "Username should not be empty, please try again."
+				continue
 			}
 			username := userOptions.Username
 			_, _, err := client.Users.Get(ctx, username)
 			if err == nil {
 				break
 			}
-			fmt.Println("User does not exist, try again!")
+			errMsg = "User does not exist, please try again."
 		}
 	}
 
@@ -102,7 +107,7 @@ func action(c *cli.Context) error {
 	for _, selection := range userOptions.DataToCollect {
 		switch selection {
 		case "Repository Count":
-			repoCount, err := stats.GetRepositories(ctx, client, userOptions.Username)
+			repoCount, err := stats.GetRepositoriesCount(ctx, client, userOptions.Username)
 			if err != nil {
 				log.Fatal("Could not fetch data")
 			}
@@ -113,14 +118,14 @@ func action(c *cli.Context) error {
 			if err != nil {
 				log.Fatal("Could not fetch data")
 			}
-			fmt.Println("Total PR Count (Open and Closed):", prCount)
+			fmt.Println("Total PR Count:", prCount)
 
 		case "Issue Count":
 			issueCount, err := stats.GetIssueStats(ctx, client, userOptions.Username)
 			if err != nil {
 				log.Fatal("Could not fetch data")
 			}
-			fmt.Println("Total PR Count (Open and Closed):", issueCount)
+			fmt.Println("Total Issue Count:", issueCount)
 		}
 	}
 

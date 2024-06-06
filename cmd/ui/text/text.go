@@ -5,8 +5,13 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/tomasohCHOM/github-stats/cmd/state"
 )
+
+var headerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#A2D2FB")).Bold(true)
+var cursorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7CE38B")).Bold(true)
+var errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FA7970")).Bold(true)
 
 type (
 	errMsg error
@@ -16,10 +21,11 @@ type model struct {
 	userOptions *state.UserOptions
 	textInput   textinput.Model
 	err         error
+	errMsg      string
 	header      string
 }
 
-func InitialTextModel(userOptions *state.UserOptions, header string) model {
+func InitialTextModel(userOptions *state.UserOptions, header, errMsg string) model {
 	ti := textinput.New()
 	ti.Placeholder = "tomasohCHOM"
 	ti.Focus()
@@ -30,6 +36,7 @@ func InitialTextModel(userOptions *state.UserOptions, header string) model {
 		userOptions: userOptions,
 		textInput:   ti,
 		err:         nil,
+		errMsg:      errMsg,
 		header:      header,
 	}
 }
@@ -60,8 +67,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return fmt.Sprintf(
-		"%s\n\n%s\n\n",
-		m.header,
-		m.textInput.View(),
+		"%s\n%s\n\n%s",
+		errorStyle.Render(m.errMsg),
+		headerStyle.Render(m.header),
+		cursorStyle.Render(m.textInput.View()),
 	)
 }
