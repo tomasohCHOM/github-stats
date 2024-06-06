@@ -7,7 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/tomasohCHOM/github-stats/cmd/state"
+	"github.com/tomasohCHOM/github-stats/cmd/program"
 )
 
 var (
@@ -18,7 +18,7 @@ var (
 )
 
 type model struct {
-	userOptions *state.UserOptions
+	userOptions *program.ProgramState
 	options     []string
 	cursor      int
 	selected    map[int]bool
@@ -27,7 +27,7 @@ type model struct {
 	header      string
 }
 
-func InitialSelectionModel(userOptions *state.UserOptions, header string, options []string) model {
+func InitialSelectionModel(userOptions *program.ProgramState, header string, options []string) model {
 	return model{
 		userOptions: userOptions,
 		header:      header,

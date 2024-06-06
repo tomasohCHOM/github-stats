@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/tomasohCHOM/github-stats/cmd/state"
+	"github.com/tomasohCHOM/github-stats/cmd/program"
 )
 
 var (
@@ -20,14 +20,14 @@ type (
 )
 
 type model struct {
-	userOptions *state.UserOptions
+	userOptions *program.ProgramState
 	textInput   textinput.Model
 	err         error
 	errMsg      string
 	header      string
 }
 
-func InitialTextModel(userOptions *state.UserOptions, header, errMsg string) model {
+func InitialTextModel(userOptions *program.ProgramState, header, errMsg string) model {
 	ti := textinput.New()
 	ti.Placeholder = "tomasohCHOM"
 	ti.Focus()
@@ -53,7 +53,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
+		case tea.KeyCtrlC, tea.KeyEsc:
+			m.userOptions.ExitState = true
+			return m, tea.Quit
+
+		case tea.KeyEnter:
 			m.textInput.Blur()
 			m.userOptions.Username = m.textInput.Value()
 			return m, tea.Quit

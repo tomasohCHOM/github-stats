@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
-	"github.com/tomasohCHOM/github-stats/cmd/state"
+	"github.com/tomasohCHOM/github-stats/cmd/program"
 	"github.com/tomasohCHOM/github-stats/cmd/stats"
 	"github.com/tomasohCHOM/github-stats/cmd/ui/selector"
 	"github.com/tomasohCHOM/github-stats/cmd/ui/text"
@@ -28,7 +28,11 @@ const logo = `
   \_____|_|\__|_|  |_|\__,_|_.__/  |_____/ \__\__,_|\__|___/
 `
 
-var logoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#77BDFB")).Bold(true)
+var (
+	logoStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("#77BDFB")).Bold(true)
+	headerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#A2D2FB")).Bold(true)
+	contrastStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#CEA5FB")).Bold(true)
+)
 
 func Execute() {
 	err := godotenv.Load(".env")
@@ -55,7 +59,7 @@ func Execute() {
 func action(c *cli.Context) error {
 	ctx := context.Background()
 
-	userOptions := &state.UserOptions{
+	userOptions := &program.ProgramState{
 		Username:      c.String("username"),
 		DataToCollect: []string{},
 	}
@@ -80,6 +84,9 @@ func action(c *cli.Context) error {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 				return err
 			}
+
+			userOptions.ExitIfRequested(p)
+
 			if userOptions.Username == "" {
 				errMsg = "Username should not be empty, please try again."
 				continue
@@ -102,7 +109,7 @@ func action(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Println("\nWaiting for Response...")
+	fmt.Println(headerStyle.Render("\nWaiting for Response..."))
 
 	for _, selection := range userOptions.DataToCollect {
 		switch selection {
