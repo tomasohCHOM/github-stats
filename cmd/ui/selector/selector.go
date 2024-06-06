@@ -94,7 +94,7 @@ func (m model) View() string {
 			s.WriteString(fmt.Sprintf(" %s\n", line))
 		}
 	}
-	s.WriteString("\n(press q to quit)\n")
+	s.WriteString("\n(press q, esc, or ctrl-c to quit)\n")
 
 	return s.String()
 }

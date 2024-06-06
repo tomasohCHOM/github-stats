@@ -27,6 +27,7 @@ func GetRepositories(ctx context.Context, client *github.Client, username string
 	return totalRepos, nil
 }
 
+// GetRepositoriesCount fetches the count of all repositories associated with the GitHub username
 func GetRepositoriesCount(ctx context.Context, client *github.Client, username string) (int, error) {
 	repos, err := GetRepositories(ctx, client, username)
 	if err != nil {

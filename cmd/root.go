@@ -11,7 +11,6 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
 	"github.com/tomasohCHOM/github-stats/cmd/program"
-	"github.com/tomasohCHOM/github-stats/cmd/stats"
 	"github.com/tomasohCHOM/github-stats/cmd/ui/selector"
 	"github.com/tomasohCHOM/github-stats/cmd/ui/text"
 
@@ -101,40 +100,15 @@ func action(c *cli.Context) error {
 	}
 
 	header := fmt.Sprintf("Analyzing username %s, what would you like to retrieve?", userOptions.Username)
-	options := []string{"Repository Count", "Pull Request Count", "Issue Count"}
 
-	p := bubbletea.NewProgram(selector.InitialSelectionModel(userOptions, header, options))
+	p := bubbletea.NewProgram(selector.InitialSelectionModel(userOptions, header, program.RetrievalOptions))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return err
 	}
 
-	fmt.Println(headerStyle.Render("\nWaiting for Response..."))
-
-	for _, selection := range userOptions.DataToCollect {
-		switch selection {
-		case "Repository Count":
-			repoCount, err := stats.GetRepositoriesCount(ctx, client, userOptions.Username)
-			if err != nil {
-				log.Fatal("Could not fetch data")
-			}
-			fmt.Println("Public Repository Count:", repoCount)
-
-		case "Pull Request Count":
-			prCount, err := stats.GetPRStats(ctx, client, userOptions.Username)
-			if err != nil {
-				log.Fatal("Could not fetch data")
-			}
-			fmt.Println("Total PR Count:", prCount)
-
-		case "Issue Count":
-			issueCount, err := stats.GetIssueStats(ctx, client, userOptions.Username)
-			if err != nil {
-				log.Fatal("Could not fetch data")
-			}
-			fmt.Println("Total Issue Count:", issueCount)
-		}
-	}
+	fmt.Println(headerStyle.Render("\nFetching the data for you..."))
+	userOptions.RetrieveData(ctx, client)
 
 	return nil
 }
