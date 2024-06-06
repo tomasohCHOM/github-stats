@@ -93,7 +93,7 @@ func action(c *cli.Context) error {
 		}
 	}
 
-	header := "What would you like to retrieve?\n\n"
+	header := fmt.Sprintf("Analyzing username %s, what would you like to retrieve?", userOptions.Username)
 	options := []string{"Repository Count", "Pull Request Count", "Issue Count"}
 
 	p := bubbletea.NewProgram(selector.InitialSelectionModel(userOptions, header, options))

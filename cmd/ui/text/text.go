@@ -9,9 +9,11 @@ import (
 	"github.com/tomasohCHOM/github-stats/cmd/state"
 )
 
-var headerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#A2D2FB")).Bold(true)
-var cursorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7CE38B")).Bold(true)
-var errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FA7970")).Bold(true)
+var (
+	headerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#A2D2FB")).Bold(true)
+	inputStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#ECF2F8")).Bold(true)
+	errorStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FA7970")).Bold(true)
+)
 
 type (
 	errMsg error
@@ -70,6 +72,6 @@ func (m model) View() string {
 		"%s\n%s\n\n%s",
 		errorStyle.Render(m.errMsg),
 		headerStyle.Render(m.header),
-		cursorStyle.Render(m.textInput.View()),
+		inputStyle.Render(m.textInput.View()),
 	)
 }
