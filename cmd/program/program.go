@@ -9,16 +9,16 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/google/go-github/github"
 	"github.com/tomasohCHOM/github-stats/cmd/stats"
+	"github.com/tomasohCHOM/github-stats/cmd/ui/styles"
 )
 
 const (
-	STARS        = "Earned Stars Count"
-	PRS          = "Pull Requests Count"
-	ISSUES       = "Issues Count"
-	REPOSITORIES = "Repositories Count"
+	STARS        = "Earned Stars Count 🌟"
+	PRS          = "Pull Requests Count 🔨"
+	ISSUES       = "Issues Count 📈"
+	REPOSITORIES = "Repositories Count 📖"
 )
 
 const (
@@ -28,7 +28,6 @@ const (
 )
 
 var (
-	statsStyle                 = lipgloss.NewStyle().Foreground(lipgloss.Color("#7CE38B")).Bold(true)
 	ContinueProgramOptions     = []string{SAME_USER, CHANGE_USER, QUIT_PROGRAM}
 	StatsOptions               = []string{STARS, PRS, ISSUES, REPOSITORIES}
 	GitHubUsernamePlaceholders = []string{
@@ -81,6 +80,8 @@ func (p *ProgramState) ExitIfRequested(tprogram *tea.Program) {
 }
 
 func (p *ProgramState) RetrieveData(ctx context.Context, client *github.Client) {
+	fmt.Println(styles.HeaderStyle.Render("\nFetching the data for you..."))
+
 	for _, selection := range p.SelectedStats {
 		var data int
 		var err error
@@ -99,7 +100,7 @@ func (p *ProgramState) RetrieveData(ctx context.Context, client *github.Client) 
 		if err != nil {
 			log.Fatal("Could not fetch data")
 		}
-		fmt.Printf("%s: %s\n", selection, statsStyle.Render(fmt.Sprintf("%d", data)))
+		fmt.Printf("%s: %s\n", selection, styles.StatsStyle.Render(fmt.Sprintf("%d", data)))
 	}
 	fmt.Println()
 }

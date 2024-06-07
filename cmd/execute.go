@@ -7,11 +7,11 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/google/go-github/github"
 	"github.com/tomasohCHOM/github-stats/cmd/program"
 	"github.com/tomasohCHOM/github-stats/cmd/ui/multiselector"
 	"github.com/tomasohCHOM/github-stats/cmd/ui/selector"
+	"github.com/tomasohCHOM/github-stats/cmd/ui/styles"
 	"github.com/tomasohCHOM/github-stats/cmd/ui/text"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
@@ -26,12 +26,7 @@ const logo = `
   \_____|_|\__|_|  |_|\__,_|_.__/  |_____/ \__\__,_|\__|___/
 `
 
-var (
-	logoStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("#77BDFB")).Bold(true)
-	headerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#A2D2FB")).Bold(true)
-	contrastStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#CEA5FB")).Bold(true)
-)
-
+// Executes the CLI application
 func ExecuteCLI(c *cli.Context) error {
 	ctx := context.Background()
 
@@ -42,7 +37,7 @@ func ExecuteCLI(c *cli.Context) error {
 		SelectedStats: []string{},
 	}
 
-	fmt.Printf("%s\n", logoStyle.Render(logo))
+	fmt.Printf("%s\n", styles.LogoStyle.Render(logo))
 
 	token := os.Getenv("ACCESS_TOKEN")
 	if token == "" {
@@ -81,7 +76,6 @@ func ExecuteCLI(c *cli.Context) error {
 		}
 
 		header := fmt.Sprintf("Analyzing username %s, what would you like to retrieve?", userOptions.Username)
-
 		p = tea.NewProgram(multiselector.InitialMultiSelectModel(userOptions, header, program.StatsOptions))
 		if _, err := p.Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -90,7 +84,6 @@ func ExecuteCLI(c *cli.Context) error {
 
 		userOptions.ExitIfRequested(p)
 
-		fmt.Println(headerStyle.Render("\nFetching the data for you..."))
 		userOptions.RetrieveData(ctx, client)
 
 		header = "Finished fetching the data. What would you like to do now?"

@@ -6,16 +6,8 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/tomasohCHOM/github-stats/cmd/program"
-)
-
-var (
-	headerStyle           = lipgloss.NewStyle().Foreground(lipgloss.Color("#A2D2FB")).Bold(true)
-	selectedCheckboxStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7CE38B")).Bold(true)
-	selectedTextStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("#ECF2F8")).Bold(true)
-	blurStyle             = lipgloss.NewStyle().Foreground(lipgloss.Color("#89929B")).Bold(true)
-	dimStyle              = lipgloss.NewStyle().Foreground(lipgloss.Color("#C6Cdd5")).Bold(true)
+	"github.com/tomasohCHOM/github-stats/cmd/ui/styles"
 )
 
 type model struct {
@@ -23,7 +15,6 @@ type model struct {
 	options     []string
 	cursor      int
 	selected    map[int]bool
-	input       string
 	err         error
 	header      string
 }
@@ -35,7 +26,6 @@ func InitialMultiSelectModel(userOptions *program.ProgramState, header string, o
 		options:     options,
 		cursor:      0,
 		selected:    make(map[int]bool),
-		input:       "",
 		err:         nil,
 	}
 }
@@ -69,6 +59,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.selected[m.cursor] = !m.selected[m.cursor]
 		case "enter":
 			m.userOptions.SelectedStats, m.err = m.handleSelection()
+			if m.err != nil {
+				break
+			}
 			return m, tea.Quit
 		}
 
@@ -78,21 +71,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	s := strings.Builder{}
-	header := fmt.Sprintf("%s\n", headerStyle.Render(m.header))
+	header := fmt.Sprintf("%s\n", styles.HeaderStyle.Render(m.header))
 	s.WriteString(header)
 
 	for i, choice := range m.options {
 		prefix := "[ ]"
 		if m.selected[i] {
-			prefix = selectedCheckboxStyle.Render("[✓]")
-			choice = selectedTextStyle.Render(choice)
+			prefix = styles.SelectedCheckboxStyle.Render("[✓]")
+			choice = styles.SelectedTextStyle.Render(choice)
 		}
 
 		line := fmt.Sprintf("%s %s", prefix, choice)
 		if i == m.cursor {
 			s.WriteString(fmt.Sprintf("> %s\n", line))
 		} else {
-			line = blurStyle.Render(line)
+			line = styles.BlurStyle.Render(line)
 			s.WriteString(fmt.Sprintf(" %s\n", line))
 		}
 	}
@@ -110,7 +103,7 @@ func (m *model) handleSelection() ([]string, error) {
 		}
 	}
 	if len(results) == 0 {
-		return nil, fmt.Errorf("no options selected")
+		return nil, fmt.Errorf("Please select an option.")
 	}
 	return results, nil
 }
