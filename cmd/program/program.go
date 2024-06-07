@@ -21,12 +21,21 @@ const (
 	REPOSITORIES = "Repositories Count"
 )
 
-var RetrievalOptions = []string{STARS, PRS, ISSUES, REPOSITORIES}
+var StatsOptions = []string{STARS, PRS, ISSUES, REPOSITORIES}
+
+const (
+	SAME_USER    = "Continue with the same GitHub user"
+	CHANGE_USER  = "Change GitHub user"
+	QUIT_PROGRAM = "Quit the program"
+)
+
+var ContinueProgramOptions = []string{SAME_USER, CHANGE_USER, QUIT_PROGRAM}
 
 type ProgramState struct {
-	ExitState     bool
-	Username      string
-	DataToCollect []string
+	ExitState              bool
+	Username               string
+	SelectedStats          []string
+	SelectedContinueOption string
 }
 
 func (p *ProgramState) ExitIfRequested(tprogram *tea.Program) {
@@ -40,7 +49,7 @@ func (p *ProgramState) ExitIfRequested(tprogram *tea.Program) {
 }
 
 func (p *ProgramState) RetrieveData(ctx context.Context, client *github.Client) {
-	for _, selection := range p.DataToCollect {
+	for _, selection := range p.SelectedStats {
 		var data int
 		var err error
 
@@ -60,4 +69,21 @@ func (p *ProgramState) RetrieveData(ctx context.Context, client *github.Client) 
 		}
 		fmt.Printf("%s: %s\n", selection, statsStyle.Render(fmt.Sprintf("%d", data)))
 	}
+	fmt.Println()
+}
+
+func (p *ProgramState) ExecuteAfterRetrieval() {
+	switch p.SelectedContinueOption {
+	case CHANGE_USER:
+		p.Username = ""
+	case QUIT_PROGRAM:
+		p.ExitState = true
+	}
+}
+
+func (p *ProgramState) ExitAfterContinueOption() bool {
+	if p.ExitState {
+		return true
+	}
+	return false
 }

@@ -1,4 +1,5 @@
-package selector
+// Define selection options
+package multiselector
 
 import (
 	"fmt"
@@ -20,18 +21,20 @@ type model struct {
 	userOptions *program.ProgramState
 	options     []string
 	cursor      int
-	selected    int
+	selected    map[int]bool
+	input       string
 	err         error
 	header      string
 }
 
-func InitialSelectionModel(userOptions *program.ProgramState, header string, options []string) model {
+func InitialMultiSelectModel(userOptions *program.ProgramState, header string, options []string) model {
 	return model{
 		userOptions: userOptions,
 		header:      header,
 		options:     options,
-		selected:    0,
 		cursor:      0,
+		selected:    make(map[int]bool),
+		input:       "",
 		err:         nil,
 	}
 }
@@ -60,10 +63,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case " ":
-			m.selected = m.cursor
-
+			// Send the choice on the channel and exit.
+			m.selected[m.cursor] = !m.selected[m.cursor]
 		case "enter":
-			m.userOptions.SelectedContinueOption, m.err = m.handleSelection()
+			m.userOptions.SelectedStats, m.err = m.handleSelection()
 			return m, tea.Quit
 		}
 
@@ -77,9 +80,9 @@ func (m model) View() string {
 	s.WriteString(header)
 
 	for i, choice := range m.options {
-		prefix := "( )"
-		if i == m.selected {
-			prefix = selectedCheckboxStyle.Render("(•)")
+		prefix := "[ ]"
+		if m.selected[i] {
+			prefix = selectedCheckboxStyle.Render("[✓]")
 			choice = selectedTextStyle.Render(choice)
 		}
 
@@ -96,11 +99,15 @@ func (m model) View() string {
 	return s.String()
 }
 
-func (m *model) handleSelection() (string, error) {
-	for i := range m.options {
-		if i == m.selected {
-			return m.options[i], nil
+func (m *model) handleSelection() ([]string, error) {
+	var results []string
+	for i := range m.selected {
+		if m.selected[i] {
+			results = append(results, m.options[i])
 		}
 	}
-	return "", fmt.Errorf("no options selected")
+	if len(results) == 0 {
+		return nil, fmt.Errorf("no options selected")
+	}
+	return results, nil
 }
