@@ -29,7 +29,7 @@ type model struct {
 
 func InitialTextModel(userOptions *program.ProgramState, header, errMsg string) model {
 	ti := textinput.New()
-	ti.Placeholder = "tomasohCHOM"
+	ti.Placeholder = program.GrabRandomPlaceholder()
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20

@@ -88,6 +88,8 @@ func ExecuteCLI(c *cli.Context) error {
 			return err
 		}
 
+		userOptions.ExitIfRequested(p)
+
 		fmt.Println(headerStyle.Render("\nFetching the data for you..."))
 		userOptions.RetrieveData(ctx, client)
 

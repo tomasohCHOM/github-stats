@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/google/go-github/github"
 	"github.com/tomasohCHOM/github-stats/cmd/stats"
 )
-
-var statsStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7CE38B")).Bold(true)
 
 const (
 	STARS        = "Earned Stars Count"
@@ -21,15 +21,42 @@ const (
 	REPOSITORIES = "Repositories Count"
 )
 
-var StatsOptions = []string{STARS, PRS, ISSUES, REPOSITORIES}
-
 const (
 	SAME_USER    = "Continue with the same GitHub user"
 	CHANGE_USER  = "Change GitHub user"
 	QUIT_PROGRAM = "Quit the program"
 )
 
-var ContinueProgramOptions = []string{SAME_USER, CHANGE_USER, QUIT_PROGRAM}
+var (
+	statsStyle                 = lipgloss.NewStyle().Foreground(lipgloss.Color("#7CE38B")).Bold(true)
+	ContinueProgramOptions     = []string{SAME_USER, CHANGE_USER, QUIT_PROGRAM}
+	StatsOptions               = []string{STARS, PRS, ISSUES, REPOSITORIES}
+	GitHubUsernamePlaceholders = []string{
+		"theprimeagen",
+		"torvalds",
+		"dhh",
+		"tj",
+		"gaearon",
+		"addyosmani",
+		"yyx990803",
+		"sindresorhus",
+		"fabpot",
+		"substack",
+		"tpope",
+		"pengwynn",
+		"paulirish",
+		"steveklabnik",
+		"defunkt",
+		"mojombo",
+		"drnic",
+		"avsm",
+		"jashkenas",
+		"hadley",
+		"tomasohCHOM",
+		"EthanThatOneKid",
+		"acmcsufoss",
+	}
+)
 
 type ProgramState struct {
 	ExitState              bool
@@ -38,12 +65,17 @@ type ProgramState struct {
 	SelectedContinueOption string
 }
 
+func GrabRandomPlaceholder() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomIndex := r.Intn(len(GitHubUsernamePlaceholders))
+	return GitHubUsernamePlaceholders[randomIndex]
+}
+
 func (p *ProgramState) ExitIfRequested(tprogram *tea.Program) {
 	if p.ExitState {
 		if err := tprogram.ReleaseTerminal(); err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("Good Bye!")
 		os.Exit(1)
 	}
 }

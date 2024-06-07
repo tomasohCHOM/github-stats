@@ -15,6 +15,7 @@ var (
 	selectedCheckboxStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7CE38B")).Bold(true)
 	selectedTextStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("#ECF2F8")).Bold(true)
 	blurStyle             = lipgloss.NewStyle().Foreground(lipgloss.Color("#89929B")).Bold(true)
+	dimStyle              = lipgloss.NewStyle().Foreground(lipgloss.Color("#C6Cdd5")).Bold(true)
 )
 
 type model struct {
@@ -47,7 +48,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q", "esc":
+		case "q", "ctrl+c", "esc":
+			m.userOptions.ExitState = true
 			return m, tea.Quit
 
 		case "up", "k":
@@ -94,7 +96,8 @@ func (m model) View() string {
 			s.WriteString(fmt.Sprintf(" %s\n", line))
 		}
 	}
-	s.WriteString("\n(press q, esc, or ctrl-c to quit)\n")
+	helpOptions := "(Press [space] to select, enter to continue. Press q, esc, or ctrl-c to quit)"
+	s.WriteString(fmt.Sprintf("\n%s\n", helpOptions))
 
 	return s.String()
 }
