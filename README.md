@@ -2,10 +2,10 @@
 
 `github-stats` is a CLI tool that retrieves GitHub user stats. This includes:
 
-- Number of stars earned 🌟
-- Number of issues created 📈
-- Number of pull requests created 🔨
-- Number of repositories created 📖
+- Number of Stars earned 🌟
+- Number of Pull Requests created 🔨
+- Number of Issues created 📈
+- Number of Repositories created 📖
 
 ## Installation / Development
 

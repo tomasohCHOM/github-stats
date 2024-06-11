@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -41,7 +40,8 @@ func ExecuteCLI(c *cli.Context) error {
 
 	token := os.Getenv("ACCESS_TOKEN")
 	if token == "" {
-		log.Fatal("Please set your GitHub token in the ACCESS_TOKEN environment variable.")
+		err := fmt.Errorf("Please set your GitHub token in the ACCESS_TOKEN environment variable.")
+		return err
 	}
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
