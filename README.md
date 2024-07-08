@@ -7,7 +7,19 @@
 - Number of Issues created 📈
 - Number of Repositories created 📖
 
-## Installation / Development
+## Installation
+
+```bash
+go install github.com/tomasohCHOM/github-stats@latest
+```
+
+Run the following command to start the application:
+
+```
+github-stats
+```
+
+## Development Setup
 
 Clone the repository:
 
